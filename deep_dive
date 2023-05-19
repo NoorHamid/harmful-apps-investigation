@@ -23,14 +23,21 @@ ORDER by app_name
 # **For the apps with no description or null hash:**
     # Force change & Warn:
         # Step 1: Warn.
-        # Step 2: Make developers complete these fields. If they match an existing app where the name is already similar, **permanent ban.** If they don’t match, they evade a ban but have a warning still.
-    # If someone doesn't have a description or hash, it doesn't automatically make them questionable for a ban. I think this should be a two-step process. Initially, give the app a warning, and then make the dev fill in those 2 missing. If after the fields are filled, they don't seem to pose a threat in terms of copying another app and there are no further reports of malicious activity, then they are let go with a warning. However, if they do upload a description and avatar hash that almost verbatim matches another app, it’s most likely a copy = permanent  ban.
+        # Step 2: Make developers complete these fields. If they match an existing app where the name is already similar, **permanent ban.** 
+        # If they don’t match, they evade a ban but have a warning still.
+    # If someone doesn't have a description or hash, it doesn't automatically make them questionable for a ban. I think this should be a two-step process. 
+    # Initially, give the app a warning, and then make the dev fill in those 2 missing. 
+    # If after the fields are filled, they don't seem to pose a threat in terms of copying another app and there are no further reports of malicious activity, then they are let go with a warning. 
+    # However, if they do upload a description and avatar hash that almost verbatim matches another app, it’s most likely a copy = permanent  ban.
 # **For apps with similar name, a developer warning, and low guild count: Temporary Ban.**
     # any apps or developers who created said apps where the warning was related to explicit content, hacking: **Permanent Ban.**
-    # When the name is already similar, and the developer is questionable (has a spam warning for instance), it appears to build a foundation for a non-trustworthy app or developer. When you then at a low guild count, then it seems like the app isn't genuine and should be temporary banned and the developer will get another warning. There should also be a system implemented when a dev/app accrues multiple warnings they will be issued a temporary ban and then further, a permanent ban.
+    # When the name is already similar, and the developer is questionable (has a spam warning for instance), it appears to build a foundation for a non-trustworthy app or developer. 
+# When you then at a low guild count, then it seems like the app isn't genuine and should be temporary banned and the developer will get another warning. 
+# There should also be a system implemented when a dev/app accrues multiple warnings they will be issued a temporary ban and then further, a permanent ban.
     # All apps or devs that have the above flags, but the warnings are more extreme, should be permanently banned. There is no tolerance for that behavior$.**
 # **All other apps that do not fall under the above categories: Warn**
 
 # → What I would have done if I had more time to ensure the accuracy or enforcement action.
 
-# In my opinion, soundex() is a fairly naïve algorithm. If I had more time, I would try to use another string similarity algorithm (i.e. n-grams). This is because n-grams are helpful to analyze sequence of relevant words / text classification and can provide a similarity score which I can utilize to more accurately choose potentially malicious apps.
+# In my opinion, soundex() is a fairly naïve algorithm. If I had more time, I would try to use another string similarity algorithm (i.e. n-grams). 
+# This is because n-grams are helpful to analyze sequence of relevant words / text classification and can provide a similarity score which I can utilize to more accurately choose potentially malicious apps.
