@@ -1,0 +1,76 @@
+#I looked at the entire dataset (2 tables) joined together and ran the SOUNDEX() (app_sound) function to determine phonetically similar app names (fuzzy match). 
+Utilized case when statements to start creating my flag system. This will assign a numerical value to each rule the app violates (from rules created above). 
+Different weights were assigned to how harmful the flag would be considered.
+
+with data as(
+SELECT 
+  app.id AS app_id
+  , app_name
+  , SOUNDEX(app_name) AS app_sound
+  , guild_count
+  , app.developer_id AS developer_id
+  , CASE WHEN warning_reason is NOT NULL then 1.5 end AS dev_has_warning
+  , CASE WHEN avatar_hash is NULL then 0.5 end AS null_avatar_hash
+  , CASE WHEN description is NULL then 0.5 end AS null_description
+  , CASE WHEN guild_count <= 100 then 0.5 end AS low_guild_count
+FROM nice-incline-382704.applications.applications AS app  
+LEFT JOIN nice-incline-382704.applications.developers AS dev
+  ON app.developer_id = dev.id
+),
+
+# I made a subquery that contains all verified developers (considered trustworthy)
+dev_has_verified_apps as(
+SELECT
+  dev.id AS verified_app_dev_id
+FROM nice-incline-382704.applications.applications AS app  
+LEFT JOIN nice-incline-382704.applications.developers AS dev
+  ON app.developer_id = dev.id
+WHERE verified
+),
+
+
+# I compared the app sound and guild_count. 
+# In particular, I used a row number window function to assign a warning count to those apps that had similar names and lower guild counts.
+sound_similarity as(
+SELECT
+ app_sound
+ , developer_id AS similar_dev_id
+ , guild_count AS similar_gc
+ , ROW_NUMBER () OVER (PARTITION BY app_sound ORDER BY guild_count desc) as row_nbr
+ , CASE WHEN ROW_NUMBER () OVER (PARTITION BY app_sound) > 1 THEN 1 END AS app_has_similar_name
+FROM data
+ORDER BY app_sound
+),
+
+# Joined all these subqueries to create a final table where I could add up all the warnings an app could have
+final_table as(
+SELECT 
+  data.*
+ , devs.*
+ , ss.app_has_similar_name
+ , COALESCE(dev_has_warning,0) + COALESCE(null_avatar_hash,0) + COALESCE(null_description,0) + COALESCE(low_guild_count,0) + COALESCE(app_has_similar_name,0) AS total_flag_counts
+FROM data 
+LEFT JOIN dev_has_verified_apps AS devs ON devs.verified_app_dev_id = data.developer_id
+LEFT JOIN sound_similarity AS ss ON ss.similar_dev_id = data.developer_id
+),
+
+# Given all the developer_id’s in the final_table output, any that were in the verified list were true (all clear) and false. 
+# I wanted to exclude developers that were verified. 
+is_dev_ver as (
+SELECT 
+ *   
+, CASE WHEN developer_id IN (verified_app_dev_id) THEN true  ELSE false end AS is_dev_verified
+FROM final_table 
+ORDER BY app_name ASC, guild_count DESC
+)
+
+# LAST STEP: Final Output of app_id’s. I set the threshold of total_flag_counts ≥ 2.0, meaning, when all the fields are summed  [ref: total_flag_counts in step 4], 
+# and the sum is 2.0 or higher, then the app_id is pulled into the final list of potentially malicious id’s. [reasoning for choosing 2.0 below]
+SELECT 
+  app_id
+FROM is_dev_ver
+WHERE verified_app_dev_id is null AND total_flag_counts >= 2.0
+ORDER by app_name
+
+
+# Output is a csv of malicious application ids.
